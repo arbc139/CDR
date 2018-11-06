@@ -14,6 +14,7 @@ public class Analyzer {
 
     public void analyzeToFile(Iterable<Cdr> cdrs, File outputFile) {
         checkFileDirectory(outputFile);
+        System.out.println(outputFile.toString());
         BufferedWriter writer;
         try {
             writer = new BufferedWriter(new FileWriter(outputFile));
