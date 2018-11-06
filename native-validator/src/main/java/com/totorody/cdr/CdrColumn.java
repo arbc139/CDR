@@ -46,14 +46,27 @@ public class CdrColumn<T> {
         return new CdrColumn<>(
                 length, null,
                 rawValue -> rawValue,
-                (value, _empty) -> value.length() < length);
+                (value, _empty) -> value.length() <= length);
+    }
+
+    enum CdrBoolean {
+        TRUE, FALSE, NULL,
     }
 
     public static CdrColumn generateBooleanColumn(final int length) {
         return new CdrColumn<>(
                 length, null,
-                rawValue -> rawValue.equals("T") ? Boolean.TRUE : Boolean.FALSE,
-                (value, _empty) -> value);
+                rawValue -> {
+                    switch (rawValue) {
+                        case "T":
+                            return CdrBoolean.TRUE;
+                        case "F":
+                            return CdrBoolean.FALSE;
+                        default:
+                            return CdrBoolean.NULL;
+                    }
+                },
+                (value, _empty) -> value != CdrBoolean.NULL);
     }
 
     public static CdrColumn generateEnumColumn(final int length, final List<String> candidates) {
@@ -68,6 +81,7 @@ public class CdrColumn<T> {
     private List<String> enumCandidates;
     private Function<String, T> convertor;
     private BiFunction<T, List<String>, Boolean> constraint;
+
 
     public CdrColumn(int length, @Nullable List<String> enumCandidates,
                      Function<String, T> convertor,

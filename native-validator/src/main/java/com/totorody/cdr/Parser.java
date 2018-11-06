@@ -55,6 +55,7 @@ public class Parser {
             while ((line = reader.readLine()) != null) {
                 builder.append(line);
             }
+            reader.close();
         } catch (IOException e) {
             System.out.println("SplitBy450 has failed on BufferReader.");
             throw new RuntimeException(e);

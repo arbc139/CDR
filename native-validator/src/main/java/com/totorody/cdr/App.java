@@ -4,12 +4,18 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class App {
     public static void main( String[] args ) {
-        long start = System.nanoTime();
         ImmutableList<String> columnOrder = new ImmutableList.Builder<String>()
                 .add("length")
                 .add("serviceIndicator")
@@ -143,14 +149,66 @@ public class App {
                 .put("sgsnMccMnc", CdrColumn.generateStringColumn(6))
                 .put("reserved", CdrColumn.generateStringColumn(43))
                 .build();
-        File file = new File("cdr-files/HD_VOICE1/A_100");
-        Parser parser = new Parser(file, columnOrder, columnMap);
-        Iterable<Cdr> cdrs = parser.parseParallel();
-        long end = System.nanoTime();
-        System.out.println("Execution time: " + (end - start));
+
+        // Creates & Collects files.
+        long startTime, endTime;
+
+        List<Path> cdrPaths;
+        try (Stream<Path> paths = Files.walk(Paths.get("cdr-files"))) {
+            cdrPaths = paths.filter(Files::isRegularFile)
+                    .collect(Collectors.toList());
+        } catch (IOException e) {
+            System.out.println("[ERROR] cdr-files directory is missed. Please check it.");
+            throw new RuntimeException(e);
+        }
+
+        startTime = System.currentTimeMillis();
+        for (Path path : cdrPaths) {
+            executeCdrValidator(path, columnOrder, columnMap);
+        }
+        endTime = System.currentTimeMillis();
+        System.out.println("Total execution time: " + (endTime - startTime));
+
+        // Deprecated
+//        long startTime, endTime;
+//
+//        // Parses by using ColumnOrder & Map.
+//        startTime = System.currentTimeMillis();
+//        Parser parser = new Parser(inputFile, columnOrder, columnMap);
+//        Iterable<Cdr> cdrs = parser.parseParallel();
+//        endTime = System.currentTimeMillis();
+//        System.out.println("Parser Execution Time: " + (endTime - startTime));
+//
+//        // Validates Cdrs.
+//        startTime = System.currentTimeMillis();
+//        Validator validator = new Validator(columnMap);
+//        Iterable<Cdr> errorCdrs = validator.findErrorCdrs(cdrs);
+//        System.out.println(errorCdrs);
+//        endTime = System.currentTimeMillis();
+//        System.out.println("Validator Execution Time: " + (endTime - startTime));
+
+        // Analyzes Error Cdrs
+//        startTime = System.currentTimeMillis();
+//        Analyzer analyzer = new Analyzer();
+//        analyzer.analyzeToConsole(errorCdrs);
+//        endTime = System.currentTimeMillis();
+//        System.out.println("Analyzer Execution Time: " + (endTime - startTime));
     }
 
-    public static void executeFiles(final File directory) {
+    public static void executeCdrValidator(final Path inputPath, List<String> columnOrder,
+                                           Map<String, CdrColumn<?>> columnMap) {
+        // Parses by using ColumnOrder & Map.
+        Parser parser = new Parser(inputPath.toFile(), columnOrder, columnMap);
+        Iterable<Cdr> cdrs = parser.parseParallel();
 
+        // Validates Cdrs.
+        Validator validator = new Validator(columnMap);
+        Iterable<Cdr> errorCdrs = validator.findErrorCdrs(cdrs);
+
+        Path outputPath = new File("output")
+                .toPath()
+                .resolve(inputPath);
+        Analyzer analyzer = new Analyzer();
+        analyzer.analyzeToFile(errorCdrs, outputPath.toFile());
     }
 }

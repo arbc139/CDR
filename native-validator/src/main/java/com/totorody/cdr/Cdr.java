@@ -1,6 +1,9 @@
 package com.totorody.cdr;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class Cdr {
 
@@ -15,6 +18,8 @@ public class Cdr {
         return reserved != RESERVED_SIZE;
     }
 
+    public boolean isInvalid;
+    public List<String> invalidColumns;
     private Map<String, ?> cdrMap;
 
     public Cdr(Map<String, ?> cdrMap) {
@@ -23,7 +28,38 @@ public class Cdr {
 
     @Override
     public String toString() {
-        return this.cdrMap.toString();
+        StringBuilder builder = new StringBuilder();
+        builder.append("\n-------[CDR]-------\n")
+                .append(this.cdrMap.toString())
+                .append("\n")
+                .append("isInvalid: ")
+                .append(isInvalid)
+                .append("\n")
+                .append("invalidColumns: ")
+                .append(invalidColumns == null ? "" : invalidColumns.toString())
+                .append("\n");
+        return builder.toString();
+    }
+
+    public Cdr validate(final Map<String, CdrColumn<?>> columnMap) {
+        Cdr newCdr = new Cdr(cdrMap);
+        final List<String> invalidColumns = new ArrayList<>();
+        this.cdrMap.entrySet().parallelStream()
+                .forEach(entry -> {
+                    CdrColumn column = columnMap.get(entry.getKey());
+                    if (!column.validate(entry.getValue())) {
+                        invalidColumns.add(entry.getKey());
+                    }
+                });
+        if (!invalidColumns.isEmpty()) {
+            newCdr.isInvalid = true;
+            newCdr.invalidColumns = invalidColumns;
+        }
+        return newCdr;
+    }
+
+    public boolean isEmpty() {
+        return cdrMap.isEmpty();
     }
 }
 
