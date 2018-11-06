@@ -1,2 +1,3 @@
 **/__pycache__/
 *.cdr
+native-validator/cdr-files/**

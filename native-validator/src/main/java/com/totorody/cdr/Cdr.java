@@ -1,10 +1,36 @@
 package com.totorody.cdr;
 
+import java.util.Map;
+
 public class Cdr {
 
+    public static int MAX_SIZE = 450;
+    private static int RESERVED_SIZE = 43;
+
+    public static int calculateReservedSize(final int length) {
+        return RESERVED_SIZE - (MAX_SIZE - length);
+    }
+
+    public static boolean isDifferentReservedSize(final int reserved) {
+        return reserved != RESERVED_SIZE;
+    }
+
+    private Map<String, ?> cdrMap;
+
+    public Cdr(Map<String, ?> cdrMap) {
+        this.cdrMap = cdrMap;
+    }
+
+    @Override
+    public String toString() {
+        return this.cdrMap.toString();
+    }
+}
+
+    /*
     public int length;
-    public int serviceIndicator;
-    public int systemNo;
+    public String serviceIndicator;
+    public String systemNo;
     public int serviceType;
     public int subServiceType;
     public int suppService;
@@ -108,4 +134,4 @@ public class Cdr {
         this.pcsSfi = pcsSfi;
         this.sgsnMccMnc = sgsnMccMnc;
     }
-}
+    */
