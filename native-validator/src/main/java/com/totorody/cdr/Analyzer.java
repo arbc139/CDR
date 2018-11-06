@@ -1,10 +1,8 @@
 package com.totorody.cdr;
 
 import java.io.*;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 
 public class Analyzer {
 
@@ -16,9 +14,9 @@ public class Analyzer {
 
     public void analyzeToFile(Iterable<Cdr> cdrs, File outputFile) {
         checkFileDirectory(outputFile);
-        Writer writer;
+        BufferedWriter writer;
         try {
-            writer = Files.newBufferedWriter(outputFile.toPath(), Charset.defaultCharset(), StandardOpenOption.APPEND, StandardOpenOption.CREATE_NEW);
+            writer = new BufferedWriter(new FileWriter(outputFile));
             for (Cdr cdr : cdrs) {
                 writer.write(cdr.toString());
             }

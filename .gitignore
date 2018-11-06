@@ -2,3 +2,5 @@
 *.cdr
 native-validator/cdr-files/**
 native-validator/output/**
+native-validator/**/target/
+**/.idea/
