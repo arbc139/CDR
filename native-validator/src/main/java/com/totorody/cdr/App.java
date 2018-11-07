@@ -17,6 +17,8 @@ import java.util.stream.Stream;
 
 public class App {
     public static void main( String[] args ) {
+        TimeElapser elapser = new TimeElapser();
+        elapser.start();
         ImmutableList<String> columnOrder = new ImmutableList.Builder<String>()
                 .add("length")
                 .add("serviceIndicator")
@@ -152,8 +154,6 @@ public class App {
                 .build();
 
         // Creates & Collects files.
-        long startTime, endTime;
-
         List<Path> cdrPaths;
         try (Stream<Path> paths = Files.walk(Paths.get("cdr-files"))) {
             cdrPaths = paths.filter(Files::isRegularFile)
@@ -163,13 +163,12 @@ public class App {
             throw new RuntimeException(e);
         }
 
-        startTime = System.currentTimeMillis();
         for (Path path : cdrPaths) {
             System.out.println(path.toString());
             executeCdrValidator(path, columnOrder, columnMap);
         }
-        endTime = System.currentTimeMillis();
-        System.out.println("Total execution time: " + (endTime - startTime));
+        System.out.println("Total execution time: " + elapser.elapse());
+        elapser.stop();
 
         // Deprecated
 //        long startTime, endTime;
