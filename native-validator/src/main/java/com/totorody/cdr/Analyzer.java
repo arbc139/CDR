@@ -1,5 +1,8 @@
 package com.totorody.cdr;
 
+import com.google.common.collect.Iterators;
+import com.google.common.collect.Lists;
+
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -10,6 +13,16 @@ public class Analyzer {
         for (Cdr cdr : cdrs) {
             System.out.println(cdr);
         }
+    }
+
+    public void simpleAnalyze(Iterable<Cdr> cdrs, Iterable<Cdr> errorCdrs) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("[Total] ")
+                .append(Iterators.size(cdrs.iterator()))
+                .append("\n")
+                .append("[Error] ")
+                .append(Iterators.size(errorCdrs.iterator()));
+        System.out.println(builder.toString());
     }
 
     public void analyzeToFile(Iterable<Cdr> cdrs, File outputFile) {

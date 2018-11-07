@@ -13,9 +13,7 @@ public class Validator {
     }
 
     public Iterable<Cdr> findErrorCdrs(Iterable<Cdr> cdrs) {
-        return Iterables.filter(
-                Iterables.transform(cdrs, cdr -> cdr.validate(columnMap)),
-                cdr -> cdr.isInvalid
-        );
+        Iterable<Cdr> validatedCdrs = Iterables.transform(cdrs, cdr -> cdr.validate(columnMap));
+        return Iterables.filter(validatedCdrs, cdr -> cdr.isInvalid);
     }
 }

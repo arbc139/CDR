@@ -164,6 +164,7 @@ public class App {
 
         startTime = System.currentTimeMillis();
         for (Path path : cdrPaths) {
+            System.out.println(path.toString());
             executeCdrValidator(path, columnOrder, columnMap);
         }
         endTime = System.currentTimeMillis();
@@ -205,10 +206,11 @@ public class App {
         Validator validator = new Validator(columnMap);
         Iterable<Cdr> errorCdrs = validator.findErrorCdrs(cdrs);
 
-        Path outputPath = new File("output")
-                .toPath()
-                .resolve(inputPath);
         Analyzer analyzer = new Analyzer();
-        analyzer.analyzeToFile(errorCdrs, outputPath.toFile());
+        analyzer.simpleAnalyze(cdrs, errorCdrs);
+
+//        Path outputPath = new File("output")
+//                .toPath()
+//                .resolve(inputPath);
     }
 }
