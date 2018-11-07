@@ -2,6 +2,7 @@ package com.totorody.cdr;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 
 import java.io.File;
 import java.io.IOException;
@@ -199,15 +200,25 @@ public class App {
     public static void executeCdrValidator(final Path inputPath, List<String> columnOrder,
                                            Map<String, CdrColumn<?>> columnMap) {
         // Parses by using ColumnOrder & Map.
+        TimeElapser elapser = new TimeElapser();
+        elapser.start();
         Parser parser = new Parser(inputPath.toFile(), columnOrder, columnMap);
-        Iterable<Cdr> cdrs = parser.parseParallel();
+        List<Cdr> cdrs = Lists.newArrayList(parser.parseParallel());
+        System.out.println("Parser Execution Time:      "+ elapser.elapse());
+        elapser.stop();
 
         // Validates Cdrs.
+        elapser.start();
         Validator validator = new Validator(columnMap);
-        Iterable<Cdr> errorCdrs = validator.findErrorCdrs(cdrs);
+        List<Cdr> errorCdrs = Lists.newArrayList(validator.findErrorCdrs(cdrs));
+        System.out.println("Validator Execution Time:   "+ elapser.elapse());
+        elapser.stop();
 
+        elapser.start();
         Analyzer analyzer = new Analyzer();
         analyzer.simpleAnalyze(cdrs, errorCdrs);
+        System.out.println("Analyzer Execution Time:    "+ elapser.elapse());
+        elapser.stop();
 
 //        Path outputPath = new File("output")
 //                .toPath()
