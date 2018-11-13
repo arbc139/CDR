@@ -6,6 +6,7 @@ import com.google.common.collect.Lists;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.stream.StreamSupport;
 
 public class Analyzer {
 
@@ -18,10 +19,10 @@ public class Analyzer {
     public void simpleAnalyze(Iterable<Cdr> cdrs, Iterable<Cdr> errorCdrs) {
         StringBuilder builder = new StringBuilder();
         builder.append("[Total] ")
-                .append(Iterators.size(cdrs.iterator()))
+                .append(StreamSupport.stream(cdrs.spliterator(), true).count())
                 .append("\n")
                 .append("[Error] ")
-                .append(Iterators.size(errorCdrs.iterator()));
+                .append(StreamSupport.stream(errorCdrs.spliterator(), true).count());
         System.out.println(builder.toString());
     }
 

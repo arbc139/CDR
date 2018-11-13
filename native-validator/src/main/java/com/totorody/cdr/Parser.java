@@ -35,7 +35,7 @@ public class Parser {
         this.indexMap = builder.build();
     }
 
-    public Iterable<Cdr> parseParallel() {
+    public Iterable<Cdr> parseParallelV2() {
         BufferedReader reader;
         try {
             reader = new BufferedReader(new FileReader(this.cdrFile));
@@ -45,7 +45,7 @@ public class Parser {
         }
 
         Iterable<String> rawCdrs = splitBy450(reader);
-        return Iterables.transform(rawCdrs, this::parseLineParallel);
+        return Iterables.transform(rawCdrs, this::parseLineParallelV2);
     }
 
     private Iterable<String> splitBy450(final BufferedReader reader) {
@@ -63,6 +63,36 @@ public class Parser {
         return Splitter.fixedLength(Cdr.MAX_SIZE).split(builder.toString());
     }
 
+    private Cdr parseLineParallelV2(final String rawCdr) {
+        Map<String, ?> cdrMap = indexMap.entrySet().parallelStream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> {
+                            String columnStr = entry.getKey();
+                            Pair<Integer, Integer> indexInfo = entry.getValue();
+                            int startIndex = indexInfo.getKey();
+                            int endIndex = indexInfo.getValue();
+                            CdrColumn column = columnMap.get(columnStr);
+                            return column.convertRawValue(rawCdr.substring(startIndex, endIndex).trim());
+                        }));
+        return Cdr.createCdrWithValidate(cdrMap, columnMap);
+    }
+
+    @Deprecated
+    public Iterable<Cdr> parseParallel() {
+        BufferedReader reader;
+        try {
+            reader = new BufferedReader(new FileReader(this.cdrFile));
+        } catch (FileNotFoundException e) {
+            System.out.println("[ERROR] Target CDR File is not found.");
+            throw new RuntimeException(e);
+        }
+
+        Iterable<String> rawCdrs = splitBy450(reader);
+        return Iterables.transform(rawCdrs, this::parseLineParallel);
+    }
+
+    @Deprecated
     private Cdr parseLineParallel(final String rawCdr) {
         Map<String, ?> cdrMap = indexMap.entrySet().parallelStream()
                 .collect(Collectors.toMap(

@@ -1,6 +1,5 @@
 package com.totorody.cdr;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -22,6 +21,10 @@ public class Cdr {
     public List<String> invalidColumns;
     private Map<String, ?> cdrMap;
 
+    public Map<String, ?> getCdrMap() {
+        return cdrMap;
+    }
+
     public Cdr(Map<String, ?> cdrMap) {
         this.cdrMap = cdrMap;
     }
@@ -41,21 +44,36 @@ public class Cdr {
         return builder.toString();
     }
 
+    @Deprecated
     public Cdr validate(final Map<String, CdrColumn<?>> columnMap) {
         Cdr newCdr = new Cdr(cdrMap);
-        final List<String> invalidColumns = new ArrayList<>();
-        this.cdrMap.entrySet().parallelStream()
-                .forEach(entry -> {
+        newCdr.invalidColumns = cdrMap.entrySet().parallelStream()
+                .filter(entry -> {
                     CdrColumn column = columnMap.get(entry.getKey());
-                    if (!column.validate(entry.getValue())) {
-                        invalidColumns.add(entry.getKey());
-                    }
-                });
-        if (!invalidColumns.isEmpty()) {
+                    return !column.validate(entry.getValue());
+                })
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
+        if (!newCdr.invalidColumns.isEmpty()) {
             newCdr.isInvalid = true;
-            newCdr.invalidColumns = invalidColumns;
         }
         return newCdr;
+    }
+
+    public static Cdr createCdrWithValidate(final Map<String, ?> cdrMap,
+                                            final Map<String, CdrColumn<?>> columnMap) {
+        Cdr cdr = new Cdr(cdrMap);
+        cdr.invalidColumns = cdrMap.entrySet().parallelStream()
+                .filter(entry -> {
+                    CdrColumn column = columnMap.get(entry.getKey());
+                    return !column.validate(entry.getValue());
+                })
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
+        if (!cdr.invalidColumns.isEmpty()) {
+            cdr.isInvalid = true;
+        }
+        return cdr;
     }
 
     public boolean isEmpty() {

@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -83,7 +82,7 @@ public class App {
                 .put("subServiceType", CdrColumn.generateStringColumn(5))
                 .put("suppService", CdrColumn.generateEnumColumn(
                         2, Arrays.asList(
-                                "", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "90", "91")
+                                "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "90", "91")
                 ))
                 .put("accountRecordType", CdrColumn.generateEnumColumn(1, Arrays.asList("1", "5")))
                 .put("serviceId", CdrColumn.generateStringColumn(46))
@@ -121,7 +120,7 @@ public class App {
                 ))
                 .put("ppsType", CdrColumn.generateEnumColumn(
                         5, Arrays.asList(
-                                "0", "00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "11", "12", "13", "14",
+                                "00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "11", "12", "13", "14",
                                 "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28",
                                 "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42",
                                 "43", "44", "45", "46", "47", "48", "49", "50", "51", "52", "53", "54", "55", "56",
@@ -165,35 +164,39 @@ public class App {
 
         for (Path path : cdrPaths) {
             System.out.println(path.toString());
-            executeCdrValidator(path, columnOrder, columnMap);
+            //executeCdrValidator(path, columnOrder, columnMap);
+            executeCdrValidatorParallelV2(path, columnOrder, columnMap);
         }
         System.out.println("Total execution time: " + elapser.elapse());
         elapser.stop();
+    }
 
-        // Deprecated
-//        long startTime, endTime;
-//
-//        // Parses by using ColumnOrder & Map.
-//        startTime = System.currentTimeMillis();
-//        Parser parser = new Parser(inputFile, columnOrder, columnMap);
-//        Iterable<Cdr> cdrs = parser.parseParallel();
-//        endTime = System.currentTimeMillis();
-//        System.out.println("Parser Execution Time: " + (endTime - startTime));
-//
-//        // Validates Cdrs.
-//        startTime = System.currentTimeMillis();
-//        Validator validator = new Validator(columnMap);
-//        Iterable<Cdr> errorCdrs = validator.findErrorCdrs(cdrs);
-//        System.out.println(errorCdrs);
-//        endTime = System.currentTimeMillis();
-//        System.out.println("Validator Execution Time: " + (endTime - startTime));
+    public static void executeCdrValidatorParallelV2(final Path inputPath, List<String> columnOrder,
+                                                     Map<String, CdrColumn<?>> columnMap) {
+        // Parses by using ColumnOrder & Map.
+        TimeElapser elapser = new TimeElapser();
+        elapser.start();
+        Parser parser = new Parser(inputPath.toFile(), columnOrder, columnMap);
+        Iterable<Cdr> cdrs = parser.parseParallelV2();
+        System.out.println("Parser Execution Time:      "+ elapser.elapse());
+        elapser.stop();
 
-        // Analyzes Error Cdrs
-//        startTime = System.currentTimeMillis();
-//        Analyzer analyzer = new Analyzer();
-//        analyzer.analyzeToConsole(errorCdrs);
-//        endTime = System.currentTimeMillis();
-//        System.out.println("Analyzer Execution Time: " + (endTime - startTime));
+        // Validates Cdrs.
+        elapser.start();
+        Validator validator = new Validator(columnMap);
+        Iterable<Cdr> errorCdrs = validator.findErrorCdrsParallelV2(cdrs);
+        System.out.println("Validator Execution Time:   "+ elapser.elapse());
+        elapser.stop();
+
+        elapser.start();
+        Analyzer analyzer = new Analyzer();
+        analyzer.simpleAnalyze(cdrs, errorCdrs);
+        System.out.println("Analyzer Execution Time:    "+ elapser.elapse());
+        elapser.stop();
+
+//        Path outputPath = new File("output")
+//                .toPath()
+//                .resolve(inputPath);
     }
 
     public static void executeCdrValidator(final Path inputPath, List<String> columnOrder,
@@ -202,7 +205,7 @@ public class App {
         TimeElapser elapser = new TimeElapser();
         elapser.start();
         Parser parser = new Parser(inputPath.toFile(), columnOrder, columnMap);
-        List<Cdr> cdrs = Lists.newArrayList(parser.parseParallel());
+        List<Cdr> cdrs = Lists.newArrayList(parser.parse());
         System.out.println("Parser Execution Time:      "+ elapser.elapse());
         elapser.stop();
 
@@ -210,6 +213,35 @@ public class App {
         elapser.start();
         Validator validator = new Validator(columnMap);
         List<Cdr> errorCdrs = Lists.newArrayList(validator.findErrorCdrs(cdrs));
+        System.out.println("Validator Execution Time:   "+ elapser.elapse());
+        elapser.stop();
+
+        elapser.start();
+        Analyzer analyzer = new Analyzer();
+        analyzer.simpleAnalyze(cdrs, errorCdrs);
+        System.out.println("Analyzer Execution Time:    "+ elapser.elapse());
+        elapser.stop();
+
+//        Path outputPath = new File("output")
+//                .toPath()
+//                .resolve(inputPath);
+    }
+
+    @Deprecated
+    public static void executeCdrValidatorParallel(final Path inputPath, List<String> columnOrder,
+                                                   Map<String, CdrColumn<?>> columnMap) {
+        // Parses by using ColumnOrder & Map.
+        TimeElapser elapser = new TimeElapser();
+        elapser.start();
+        Parser parser = new Parser(inputPath.toFile(), columnOrder, columnMap);
+        Iterable<Cdr> cdrs = parser.parseParallel();
+        System.out.println("Parser Execution Time:      "+ elapser.elapse());
+        elapser.stop();
+
+        // Validates Cdrs.
+        elapser.start();
+        Validator validator = new Validator(columnMap);
+        Iterable<Cdr> errorCdrs = validator.findErrorCdrsParallel(cdrs);
         System.out.println("Validator Execution Time:   "+ elapser.elapse());
         elapser.stop();
 
