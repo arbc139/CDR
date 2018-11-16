@@ -10,6 +10,16 @@ import java.util.stream.StreamSupport;
 
 public class Analyzer {
 
+    enum ANALYZER_MODE {
+        SIMPLE, FILE,
+    }
+
+    public ANALYZER_MODE mode;
+
+    public Analyzer(ANALYZER_MODE mode) {
+        this.mode = mode;
+    }
+
     public void analyzeToConsole(Iterable<Cdr> cdrs) {
         for (Cdr cdr : cdrs) {
             System.out.println(cdr);

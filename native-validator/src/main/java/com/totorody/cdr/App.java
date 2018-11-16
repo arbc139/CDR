@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -15,6 +16,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class App {
+
     public static void main( String[] args ) {
         TimeElapser elapser = new TimeElapser();
         elapser.start();
@@ -188,15 +190,7 @@ public class App {
         System.out.println("Validator Execution Time:   "+ elapser.elapse());
         elapser.stop();
 
-        elapser.start();
-        Analyzer analyzer = new Analyzer();
-        analyzer.simpleAnalyze(cdrs, errorCdrs);
-        System.out.println("Analyzer Execution Time:    "+ elapser.elapse());
-        elapser.stop();
-
-//        Path outputPath = new File("output")
-//                .toPath()
-//                .resolve(inputPath);
+        executeAnalyzer(inputPath, cdrs, errorCdrs);
     }
 
     public static void executeCdrValidator(final Path inputPath, List<String> columnOrder,
@@ -216,15 +210,7 @@ public class App {
         System.out.println("Validator Execution Time:   "+ elapser.elapse());
         elapser.stop();
 
-        elapser.start();
-        Analyzer analyzer = new Analyzer();
-        analyzer.simpleAnalyze(cdrs, errorCdrs);
-        System.out.println("Analyzer Execution Time:    "+ elapser.elapse());
-        elapser.stop();
-
-//        Path outputPath = new File("output")
-//                .toPath()
-//                .resolve(inputPath);
+        executeAnalyzer(inputPath, cdrs, errorCdrs);
     }
 
     @Deprecated
@@ -245,14 +231,30 @@ public class App {
         System.out.println("Validator Execution Time:   "+ elapser.elapse());
         elapser.stop();
 
+        executeAnalyzer(inputPath, cdrs, errorCdrs);
+    }
+
+    public static void executeAnalyzer(final Path inputPath, Iterable<Cdr> cdrs, Iterable<Cdr> errorCdrs) {
+        TimeElapser elapser = new TimeElapser();
+
         elapser.start();
-        Analyzer analyzer = new Analyzer();
-        analyzer.simpleAnalyze(cdrs, errorCdrs);
+        Analyzer analyzer = new Analyzer(Analyzer.ANALYZER_MODE.FILE);
+        switch (analyzer.mode) {
+            case SIMPLE: {
+                analyzer.simpleAnalyze(cdrs, errorCdrs);
+                break;
+            }
+            case FILE: {
+                Path outputPath = new File("output")
+                        .toPath()
+                        .resolve(inputPath);
+                analyzer.analyzeToFile(errorCdrs, outputPath.toFile());
+                break;
+            }
+            default:
+                throw new RuntimeException("[ERROR] ANALYZER_MODE can't be wrong value: " + analyzer.mode);
+        }
         System.out.println("Analyzer Execution Time:    "+ elapser.elapse());
         elapser.stop();
-
-//        Path outputPath = new File("output")
-//                .toPath()
-//                .resolve(inputPath);
     }
 }
