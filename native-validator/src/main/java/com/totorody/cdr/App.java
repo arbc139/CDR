@@ -3,6 +3,7 @@ package com.totorody.cdr;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import javafx.util.Pair;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,6 +17,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class App {
+
+    private static long totalCount;
+    private static long totalErrorCount;
 
     public static void main( String[] args ) {
         TimeElapser elapser = new TimeElapser();
@@ -171,6 +175,8 @@ public class App {
             //executeCdrValidatorParallelV2(path, columnOrder, columnMap);
         }
         System.out.println("Total execution time: " + elapser.elapse());
+        System.out.println("Total Count:          " + totalCount);
+        System.out.println("Total Error Count:    " + totalErrorCount);
         elapser.stop();
     }
 
@@ -239,10 +245,18 @@ public class App {
         TimeElapser elapser = new TimeElapser();
 
         elapser.start();
-        Analyzer analyzer = new Analyzer(Analyzer.ANALYZER_MODE.SIMPLE);
+        Analyzer analyzer = new Analyzer(Analyzer.ANALYZER_MODE.DATA);
         switch (analyzer.mode) {
             case SIMPLE: {
                 analyzer.simpleAnalyze(cdrs, errorCdrs);
+                break;
+            }
+            case DATA: {
+                Pair<Long, Long> result = analyzer.getDataAnalyze(cdrs, errorCdrs);
+                long cdrCount = result.getKey();
+                long errorCount = result.getValue();
+                totalCount += cdrCount;
+                totalErrorCount += errorCount;
                 break;
             }
             case FILE: {

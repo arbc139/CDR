@@ -2,6 +2,7 @@ package com.totorody.cdr;
 
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
+import javafx.util.Pair;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -36,8 +37,8 @@ public class Analyzer {
         System.out.println(builder.toString());
     }
 
-    public Pair<Integer, Integer> getDataAnalyze(Iterable<Cdr> cdrs, Iterable<Cdr> errorCdrs) {
-        return new Pair<Integer, Integer>(
+    public Pair<Long, Long> getDataAnalyze(Iterable<Cdr> cdrs, Iterable<Cdr> errorCdrs) {
+        return new Pair<>(
             StreamSupport.stream(cdrs.spliterator(), true).count(),
             StreamSupport.stream(errorCdrs.spliterator(), true).count());
     }
