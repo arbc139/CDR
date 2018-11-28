@@ -11,7 +11,7 @@ import java.util.stream.StreamSupport;
 public class Analyzer {
 
     enum ANALYZER_MODE {
-        SIMPLE, FILE,
+        SIMPLE, FILE, DATA,
     }
 
     public ANALYZER_MODE mode;
@@ -34,6 +34,12 @@ public class Analyzer {
                 .append("[Error] ")
                 .append(StreamSupport.stream(errorCdrs.spliterator(), true).count());
         System.out.println(builder.toString());
+    }
+
+    public Pair<Integer, Integer> getDataAnalyze(Iterable<Cdr> cdrs, Iterable<Cdr> errorCdrs) {
+        return new Pair<Integer, Integer>(
+            StreamSupport.stream(cdrs.spliterator(), true).count(),
+            StreamSupport.stream(errorCdrs.spliterator(), true).count());
     }
 
     public void analyzeToFile(Iterable<Cdr> cdrs, File outputFile) {

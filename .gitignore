@@ -1,6 +1,7 @@
 **/__pycache__/
 *.cdr
 native-validator/cdr-files/**
+native-validator/cdr-files.5000m/**
 native-validator/output/**
 native-validator/**/target/
 **/.idea/

@@ -166,8 +166,9 @@ public class App {
 
         for (Path path : cdrPaths) {
             System.out.println(path.toString());
-            //executeCdrValidator(path, columnOrder, columnMap);
-            executeCdrValidatorParallelV2(path, columnOrder, columnMap);
+            executeCdrValidator(path, columnOrder, columnMap);
+            //executeCdrValidatorParallel(path, columnOrder, columnMap);
+            //executeCdrValidatorParallelV2(path, columnOrder, columnMap);
         }
         System.out.println("Total execution time: " + elapser.elapse());
         elapser.stop();
@@ -238,7 +239,7 @@ public class App {
         TimeElapser elapser = new TimeElapser();
 
         elapser.start();
-        Analyzer analyzer = new Analyzer(Analyzer.ANALYZER_MODE.FILE);
+        Analyzer analyzer = new Analyzer(Analyzer.ANALYZER_MODE.SIMPLE);
         switch (analyzer.mode) {
             case SIMPLE: {
                 analyzer.simpleAnalyze(cdrs, errorCdrs);
